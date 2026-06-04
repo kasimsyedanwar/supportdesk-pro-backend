@@ -1,6 +1,6 @@
 # SupportDesk Pro Backend
 
-A professional TypeScript backend for a support ticket management system, built to demonstrate clean backend engineering practices for SDE-1 / junior backend developer roles.
+A professional TypeScript backend for a support ticket management system
 
 ## Overview
 
