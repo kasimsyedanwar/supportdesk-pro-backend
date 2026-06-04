@@ -56,3 +56,26 @@ The following technologies will be added gradually as the project grows:
 ```txt
 GET /health
 ```
+
+## Phase 1: TypeScript Express Setup
+
+Implemented the initial TypeScript Express backend foundation.
+
+### Added
+
+- TypeScript configuration
+- Express app setup
+- Separate `app.ts` and `server.ts`
+- Central route registry
+- Health module
+- `GET /health` endpoint
+- Development, build, start, and typecheck scripts
+
+### Commands
+
+```bash
+npm run dev
+npm run typecheck
+npm run build
+npm start
+```

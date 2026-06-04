@@ -1,8 +1,5 @@
 import { Router } from 'express';
-import { healthRouter } from '../routes/health.routes';
+import { healthRouter } from '../modules/health/health.routes';
 
-const router = Router();
-
-router.use(healthRouter);
-
-export { router };
+export const apiRouter = Router();
+apiRouter.use(healthRouter);

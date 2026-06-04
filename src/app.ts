@@ -1,21 +1,7 @@
-import express, {
-  type Application,
-  type Request,
-  type Response,
-} from 'express';
-import { router } from './routes';
+import express from 'express';
+import { apiRouter } from './routes';
 
-const app: Application = express();
+export const app = express();
 
 app.use(express.json());
-
-app.use(router);
-
-app.use((_req: Request, res: Response) => {
-  return res.status(404).json({
-    success: false,
-    message: 'Route not found',
-  });
-});
-
-export { app };
+app.use(apiRouter);
