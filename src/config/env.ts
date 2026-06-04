@@ -26,6 +26,16 @@ const envSchema = z.object({
 
   MONGO_URL: z.string().min(1),
   MONGO_DB_NAME: z.string().min(1),
+
+  ACCESS_TOKEN_SECRET: z.string().min(32),
+
+  ACCESS_TOKEN_EXPIRES_IN_SECONDS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(900),
+
+  REFRESH_TOKEN_EXPIRES_IN_DAYS: z.coerce.number().int().positive().default(7),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);
@@ -33,7 +43,7 @@ const parsedEnv = envSchema.safeParse(process.env);
 if (!parsedEnv.success) {
   console.error(
     'Invalid environment variables:',
-    parsedEnv.error.flatten().fieldErrors,
+    console.error(z.flattenError(parsedEnv.error).fieldErrors),
   );
   process.exit(1);
 }
