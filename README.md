@@ -280,3 +280,32 @@ Implemented reusable role-based access control and ticket ownership guard logic.
 ```txt
 RBAC checks whether the logged-in user's role can access a route.
 ```
+
+## Phase 9: Ticket CRUD
+
+Implemented core ticket APIs with role-based access and ownership checks.
+
+### Added
+
+- `POST /tickets`
+- `GET /tickets/my`
+- `GET /tickets/:ticketId`
+- `PATCH /tickets/:ticketId`
+- `GET /admin/tickets`
+- `GET /agent/tickets`
+- Ticket request validation using Zod
+- Customer ticket creation
+- Customer own ticket listing
+- Customer own OPEN ticket update
+- Admin all-ticket listing
+- Agent assigned-ticket listing
+- Ticket detail access using ownership guard
+- Ticket creation outbox event
+
+### Ticket Access Rules
+
+```txt
+CUSTOMER -> create tickets, view own tickets, update own OPEN tickets
+AGENT    -> view assigned tickets
+ADMIN    -> view all tickets
+```
