@@ -129,3 +129,48 @@ PostgreSQL -> transactional source of truth
 Redis      -> cache and rate limiting
 MongoDB    -> flexible activity logs
 ```
+
+## Phase 4: Prisma Schema and Migrations
+
+Implemented the initial PostgreSQL schema using Prisma ORM.
+
+### Added
+
+- Prisma setup
+- PostgreSQL datasource
+- User role and status enums
+- Ticket status and priority enums
+- User model
+- AgentProfile model
+- RefreshToken model
+- Ticket model
+- TicketAssignment model
+- Comment model
+- Attachment model
+- OutboxEvent model
+- Initial database migration
+- Shared Prisma client configuration
+
+### Core Database Responsibility
+
+PostgreSQL is the transactional source of truth for:
+
+- Users
+- Agent profiles
+- Refresh tokens
+- Tickets
+- Assignments
+- Comments
+- Attachment metadata
+- Outbox events
+
+### Commands
+
+```bash
+npx prisma format
+npx prisma migrate dev --name init_supportdesk_schema
+npx prisma generate
+npx prisma studio
+npm run typecheck
+npm run dev
+```

@@ -1,6 +1,7 @@
 import { app } from './app';
 import { env } from './config/env';
 import { logger } from './config/logger';
+import { prisma } from './config/prisma';
 
 const server = app.listen(env.PORT, () => {
   logger.info(
@@ -16,8 +17,17 @@ const shutdown = (signal: string): void => {
   logger.info({ signal }, 'Shutdown signal received');
 
   server.close(() => {
-    logger.info('Server closed');
-    process.exit(0);
+    prisma
+      .$disconnect()
+      .then(() => {
+        logger.info('Prisma disconnected');
+        logger.info('Server closed');
+        process.exit(0);
+      })
+      .catch((error: unknown) => {
+        logger.error({ error }, 'Error while disconnecting Prisma');
+        process.exit(1);
+      });
   });
 };
 

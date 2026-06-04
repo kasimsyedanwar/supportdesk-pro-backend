@@ -17,3 +17,4 @@ Thumbs.db
 
 uploads/
 tmp/
+/src/generated/prisma

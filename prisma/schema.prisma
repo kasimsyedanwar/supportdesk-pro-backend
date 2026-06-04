@@ -1,0 +1,233 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CUSTOMER
+  AGENT
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+  DELETED
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING_FOR_CUSTOMER
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum CommentVisibility {
+  PUBLIC
+  INTERNAL
+}
+
+enum AttachmentStorageProvider {
+  LOCAL
+  S3
+}
+
+enum OutboxEventType {
+  TICKET_CREATED
+  TICKET_ASSIGNED
+  STATUS_CHANGED
+  COMMENT_ADDED
+  ATTACHMENT_UPLOADED
+}
+
+enum OutboxEventStatus {
+  PENDING
+  PROCESSING
+  PROCESSED
+  FAILED
+}
+
+model User {
+  id           String     @id @default(uuid())
+  name         String
+  email        String     @unique
+  passwordHash String?
+  role         UserRole
+  status       UserStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  agentProfile AgentProfile?
+
+  customerTickets    Ticket[]           @relation("CustomerTickets")
+  assignedTickets    TicketAssignment[] @relation("AssignedAgent")
+  createdAssignments TicketAssignment[] @relation("AssignmentCreatedBy")
+
+  comments      Comment[]
+  attachments   Attachment[]
+  refreshTokens RefreshToken[]
+  outboxEvents  OutboxEvent[]
+
+  @@index([role])
+  @@index([status])
+  @@map("users")
+}
+
+model AgentProfile {
+  id          String  @id @default(uuid())
+  userId      String  @unique
+  department  String
+  isAvailable Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([department])
+  @@index([isAvailable])
+  @@map("agent_profiles")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
+
+model Ticket {
+  id          String         @id @default(uuid())
+  customerId  String
+  title       String
+  description String
+  status      TicketStatus   @default(OPEN)
+  priority    TicketPriority @default(MEDIUM)
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  resolvedAt DateTime?
+  closedAt   DateTime?
+
+  customer User @relation("CustomerTickets", fields: [customerId], references: [id])
+
+  assignments  TicketAssignment[]
+  comments     Comment[]
+  attachments  Attachment[]
+  outboxEvents OutboxEvent[]
+
+  @@index([customerId])
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
+  @@map("tickets")
+}
+
+model TicketAssignment {
+  id           String    @id @default(uuid())
+  ticketId     String
+  agentId      String
+  assignedBy   String
+  assignedAt   DateTime  @default(now())
+  unassignedAt DateTime?
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  agent          User @relation("AssignedAgent", fields: [agentId], references: [id])
+  assignedByUser User @relation("AssignmentCreatedBy", fields: [assignedBy], references: [id])
+
+  @@index([ticketId])
+  @@index([agentId])
+  @@index([assignedBy])
+  @@index([unassignedAt])
+  @@map("ticket_assignments")
+}
+
+model Comment {
+  id         String            @id @default(uuid())
+  ticketId   String
+  authorId   String
+  body       String
+  visibility CommentVisibility @default(PUBLIC)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author User   @relation(fields: [authorId], references: [id])
+
+  @@index([ticketId])
+  @@index([authorId])
+  @@index([visibility])
+  @@map("comments")
+}
+
+model Attachment {
+  id              String                    @id @default(uuid())
+  ticketId        String
+  uploadedById    String
+  fileName        String
+  mimeType        String
+  sizeBytes       Int
+  storageProvider AttachmentStorageProvider @default(LOCAL)
+  storageKey      String
+
+  createdAt DateTime @default(now())
+
+  ticket     Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  uploadedBy User   @relation(fields: [uploadedById], references: [id])
+
+  @@index([ticketId])
+  @@index([uploadedById])
+  @@index([storageProvider])
+  @@map("attachments")
+}
+
+model OutboxEvent {
+  id     String            @id @default(uuid())
+  type   OutboxEventType
+  status OutboxEventStatus @default(PENDING)
+
+  ticketId   String?
+  actorId    String?
+  payload    Json
+  error      String?
+  retryCount Int     @default(0)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  processedAt DateTime?
+
+  ticket Ticket? @relation(fields: [ticketId], references: [id], onDelete: SetNull)
+  actor  User?   @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([type])
+  @@index([status])
+  @@index([ticketId])
+  @@index([actorId])
+  @@index([createdAt])
+  @@map("outbox_events")
+}
