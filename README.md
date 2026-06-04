@@ -262,3 +262,21 @@ Implemented Google OAuth2 login foundation with account linking.
 Google login proves external identity.
 SupportDesk Pro still issues its own accessToken and refreshToken.
 ```
+
+## Phase 8: RBAC and Ownership Guards
+
+Implemented reusable role-based access control and ticket ownership guard logic.
+
+### Added
+
+- Reusable `authorizeRoles` middleware
+- `GET /users/me` for authenticated users
+- `GET /admin/users` protected by ADMIN role
+- `GET /agent/me` protected by AGENT role
+- Ticket ownership guard service for future ticket APIs
+
+### RBAC Rule
+
+```txt
+RBAC checks whether the logged-in user's role can access a route.
+```
