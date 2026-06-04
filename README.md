@@ -309,3 +309,28 @@ CUSTOMER -> create tickets, view own tickets, update own OPEN tickets
 AGENT    -> view assigned tickets
 ADMIN    -> view all tickets
 ```
+
+## Phase 10: Assignment and Status Lifecycle
+
+Implemented ticket assignment and agent status lifecycle workflows.
+
+### Added
+
+- `PATCH /admin/tickets/:ticketId/assign`
+- `PATCH /agent/tickets/:ticketId/status`
+- Admin ticket assignment
+- Ticket reassignment with old assignment closed using `unassignedAt`
+- Agent-only assigned ticket status updates
+- Allowed status transition rules
+- `TICKET_ASSIGNED` outbox event
+- `STATUS_CHANGED` outbox event
+
+### Assignment Rules
+
+```txt
+ADMIN can assign or reassign tickets.
+Target assignee must be an ACTIVE AGENT.
+Target agent must have AgentProfile.
+Unavailable agents cannot be assigned.
+CLOSED tickets cannot be assigned.
+```

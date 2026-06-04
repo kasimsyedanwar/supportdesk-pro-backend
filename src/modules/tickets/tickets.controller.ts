@@ -2,10 +2,12 @@ import { AppError } from '../../common/errors/app-error';
 import { sendSuccess } from '../../common/utils/api-response';
 import { asyncHandler } from '../../common/utils/async-handler';
 import {
+  AssignTicketInput,
   CreateTicketInput,
   TicketIdParams,
   TicketListQuery,
   UpdateTicketInput,
+  UpdateTicketStatusInput,
 } from './ticket.schemas';
 import { ticketsService } from './tickets.service';
 
@@ -90,5 +92,30 @@ export const ticketsController = {
     );
 
     return sendSuccess(res, 200, 'Ticket updated successfully', result);
+  }),
+  assignTicket: asyncHandler(async (req, res) => {
+    const user = getAuthenticatedUser(req.user);
+    const { ticketId } = req.params as TicketIdParams;
+
+    const result = await ticketsService.assignTicket(
+      ticketId,
+      user,
+      req.body as AssignTicketInput,
+    );
+
+    return sendSuccess(res, 200, 'Ticket assigned successfully', result);
+  }),
+
+  updateAssignedTicketStatus: asyncHandler(async (req, res) => {
+    const user = getAuthenticatedUser(req.user);
+    const { ticketId } = req.params as TicketIdParams;
+
+    const result = await ticketsService.updateAssignedTicketStatus(
+      ticketId,
+      user,
+      req.body as UpdateTicketStatusInput,
+    );
+
+    return sendSuccess(res, 200, 'Ticket status updated successfully', result);
   }),
 };

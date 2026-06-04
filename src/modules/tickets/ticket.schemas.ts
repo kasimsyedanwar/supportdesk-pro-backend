@@ -35,6 +35,16 @@ export const ticketListQuerySchema = z.object({
   search: z.string().trim().min(1).max(100).optional(),
 });
 
+export const assignTicketSchema = z.object({
+  agentId: z.uuid(),
+});
+
+export const updateTicketStatusSchema = z.object({
+  status: z.enum(TicketStatus),
+});
+
+export type AssignTicketInput = z.infer<typeof assignTicketSchema>;
+export type UpdateTicketStatusInput = z.infer<typeof updateTicketStatusSchema>;
 export type TicketIdParams = z.infer<typeof ticketIdParamSchema>;
 export type CreateTicketInput = z.infer<typeof createTicketSchema>;
 export type UpdateTicketInput = z.infer<typeof updateTicketSchema>;

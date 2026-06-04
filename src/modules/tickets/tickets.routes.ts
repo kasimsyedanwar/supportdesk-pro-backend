@@ -4,10 +4,12 @@ import { authorizeRoles } from '../../common/middlewares/authorize-roles.middlew
 import { validateRequest } from '../../common/middlewares/validate-request.middleware';
 import { authenticate } from '../auth/auth.middleware';
 import {
+  assignTicketSchema,
   createTicketSchema,
   ticketIdParamSchema,
   ticketListQuerySchema,
   updateTicketSchema,
+  updateTicketStatusSchema,
 } from './ticket.schemas';
 import { ticketsController } from './tickets.controller';
 
@@ -63,4 +65,26 @@ agentTicketsRouter.get(
   authorizeRoles(UserRole.AGENT),
   validateRequest({ query: ticketListQuerySchema }),
   ticketsController.listAgentTickets,
+);
+
+adminTicketsRouter.patch(
+  '/:ticketId/assign',
+  authenticate,
+  authorizeRoles(UserRole.ADMIN),
+  validateRequest({
+    params: ticketIdParamSchema,
+    body: assignTicketSchema,
+  }),
+  ticketsController.assignTicket,
+);
+
+agentTicketsRouter.patch(
+  '/:ticketId/status',
+  authenticate,
+  authorizeRoles(UserRole.AGENT),
+  validateRequest({
+    params: ticketIdParamSchema,
+    body: updateTicketStatusSchema,
+  }),
+  ticketsController.updateAssignedTicketStatus,
 );

@@ -3,6 +3,8 @@ import {
   Prisma,
   PrismaClient,
   TicketStatus,
+  UserRole,
+  UserStatus,
 } from '@prisma/client';
 import { prisma } from '../../config/prisma';
 import {
@@ -217,5 +219,93 @@ export const ticketsRepository = {
       items,
       total,
     };
+  },
+  findAssignableAgent(agentId: string, client?: DbClient) {
+    return db(client).user.findUnique({
+      where: {
+        id: agentId,
+      },
+      include: {
+        agentProfile: true,
+      },
+    });
+  },
+
+  unassignActiveTicketAssignments(ticketId: string, client?: DbClient) {
+    return db(client).ticketAssignment.updateMany({
+      where: {
+        ticketId,
+        unassignedAt: null,
+      },
+      data: {
+        unassignedAt: new Date(),
+      },
+    });
+  },
+
+  createTicketAssignment(
+    data: {
+      ticketId: string;
+      agentId: string;
+      assignedBy: string;
+    },
+    client?: DbClient,
+  ) {
+    return db(client).ticketAssignment.create({
+      data,
+    });
+  },
+
+  createTicketOutboxEvent(
+    data: {
+      ticketId: string;
+      actorId: string;
+      type: OutboxEventType;
+      payload: Prisma.InputJsonValue;
+    },
+    client?: DbClient,
+  ) {
+    return db(client).outboxEvent.create({
+      data: {
+        ticketId: data.ticketId,
+        actorId: data.actorId,
+        type: data.type,
+        payload: data.payload,
+      },
+    });
+  },
+
+  updateTicketStatusWithOutbox(
+    data: {
+      ticketId: string;
+      actorId: string;
+      fromStatus: TicketStatus;
+      toStatus: TicketStatus;
+    },
+    client?: DbClient,
+  ) {
+    const resolvedAt =
+      data.toStatus === TicketStatus.RESOLVED ? new Date() : undefined;
+
+    return db(client).ticket.update({
+      where: {
+        id: data.ticketId,
+      },
+      data: {
+        status: data.toStatus,
+        resolvedAt,
+        outboxEvents: {
+          create: {
+            type: OutboxEventType.STATUS_CHANGED,
+            actorId: data.actorId,
+            payload: {
+              from: data.fromStatus,
+              to: data.toStatus,
+            },
+          },
+        },
+      },
+      include: ticketInclude,
+    });
   },
 };
