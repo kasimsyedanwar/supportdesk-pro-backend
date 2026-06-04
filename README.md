@@ -174,3 +174,39 @@ npx prisma studio
 npm run typecheck
 npm run dev
 ```
+
+## Phase 5: Seed Scripts
+
+Implemented repeatable local database seed data.
+
+### Added
+
+- Seed script using Prisma
+- Hashed passwords using bcrypt
+- 1 admin user
+- 2 agent users
+- 2 customer users
+- Agent profiles
+- Sample tickets
+- Sample ticket assignments
+- Sample comments
+- Sample outbox events
+
+### Seed Users
+
+| Role     | Email                             | Password     |
+| -------- | --------------------------------- | ------------ |
+| ADMIN    | admin@supportdeskpro.dev          | Password@123 |
+| AGENT    | agent.tech@supportdeskpro.dev     | Password@123 |
+| AGENT    | agent.billing@supportdeskpro.dev  | Password@123 |
+| CUSTOMER | kasim.customer@supportdeskpro.dev | Password@123 |
+| CUSTOMER | demo.customer@supportdeskpro.dev  | Password@123 |
+
+### Commands
+
+```bash
+npm run db:seed
+npx tsx src/scripts/check-prisma.ts
+npm run prisma:studio
+npm run typecheck
+```
