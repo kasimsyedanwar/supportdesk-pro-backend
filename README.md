@@ -106,3 +106,26 @@ Implemented the core backend infrastructure for configuration, logging, request 
   "requestId": "request-id"
 }
 ```
+
+## Phase 3: Local Infra with Docker Compose
+
+Implemented local infrastructure using Docker Compose.
+
+### Added
+
+- PostgreSQL container
+- Redis container
+- MongoDB container
+- Docker Compose configuration
+- PostgreSQL health check
+- Redis health check
+- MongoDB health check
+- `GET /ready` readiness endpoint
+
+### Infrastructure
+
+```txt
+PostgreSQL -> transactional source of truth
+Redis      -> cache and rate limiting
+MongoDB    -> flexible activity logs
+```

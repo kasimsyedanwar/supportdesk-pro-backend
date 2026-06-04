@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: supportdesk_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: supportdesk_pro
+      POSTGRES_USER: supportdesk_user
+      POSTGRES_PASSWORD: supportdesk_password
+    ports:
+      - '5432:5432'
+    volumes:
+      - supportdesk_postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: supportdesk_redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - supportdesk_redis_data:/data
+
+  mongo:
+    image: mongo:7
+    container_name: supportdesk_mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: supportdesk_user
+      MONGO_INITDB_ROOT_PASSWORD: supportdesk_password
+    ports:
+      - '27017:27017'
+    volumes:
+      - supportdesk_mongo_data:/data/db
+
+volumes:
+  supportdesk_postgres_data:
+  supportdesk_redis_data:
+  supportdesk_mongo_data:
