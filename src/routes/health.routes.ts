@@ -9,6 +9,7 @@ healthRouter.get('/health', (_req: Request, res: Response) => {
     data: {
       service: 'supportdesk-pro-api',
       status: 'UP',
+      environment: process.env.NODE_ENV || 'development',
       timestamp: new Date().toISOString(),
     },
   });
