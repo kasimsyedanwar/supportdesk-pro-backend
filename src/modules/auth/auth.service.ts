@@ -1,5 +1,10 @@
 import bcrypt from 'bcrypt';
-import { User, UserStatus } from '@prisma/client';
+import { OAuthProvider, User, UserStatus } from '@prisma/client';
+import {
+  getGoogleAuthorizationUrl,
+  getGoogleProfileFromCode,
+} from './auth.google-oauth';
+import { verifyOAuthState } from './auth.oauth-state';
 import { AppError } from '../../common/errors/app-error';
 import { prisma } from '../../config/prisma';
 import {
@@ -98,6 +103,96 @@ export const authService = {
 
     return {
       user: toSafeUser(user),
+      ...tokens,
+    };
+  },
+  getGoogleLoginUrl(): { url: string } {
+    return {
+      url: getGoogleAuthorizationUrl(),
+    };
+  },
+
+  async loginWithGoogle(input: {
+    code: string;
+    state: string;
+  }): Promise<AuthResponse> {
+    verifyOAuthState(input.state);
+
+    const googleProfile = await getGoogleProfileFromCode(input.code);
+
+    const result = await prisma.$transaction(async (tx) => {
+      const existingOAuthAccount = await authRepository.findOAuthAccount(
+        {
+          provider: OAuthProvider.GOOGLE,
+          providerAccountId: googleProfile.providerAccountId,
+        },
+        tx,
+      );
+
+      if (existingOAuthAccount) {
+        if (existingOAuthAccount.user.status !== UserStatus.ACTIVE) {
+          throw new AppError(
+            403,
+            'User account is not active',
+            'USER_NOT_ACTIVE',
+          );
+        }
+
+        return existingOAuthAccount.user;
+      }
+
+      const existingUser = await authRepository.findUserByEmail(
+        googleProfile.email,
+        tx,
+      );
+
+      if (existingUser) {
+        if (existingUser.status !== UserStatus.ACTIVE) {
+          throw new AppError(
+            403,
+            'User account is not active',
+            'USER_NOT_ACTIVE',
+          );
+        }
+
+        await authRepository.createOAuthAccount(
+          {
+            userId: existingUser.id,
+            provider: OAuthProvider.GOOGLE,
+            providerAccountId: googleProfile.providerAccountId,
+            email: googleProfile.email,
+          },
+          tx,
+        );
+
+        return existingUser;
+      }
+
+      const newUser = await authRepository.createGoogleCustomer(
+        {
+          name: googleProfile.name,
+          email: googleProfile.email,
+        },
+        tx,
+      );
+
+      await authRepository.createOAuthAccount(
+        {
+          userId: newUser.id,
+          provider: OAuthProvider.GOOGLE,
+          providerAccountId: googleProfile.providerAccountId,
+          email: googleProfile.email,
+        },
+        tx,
+      );
+
+      return newUser;
+    });
+
+    const tokens = await createTokenPairForUser(result);
+
+    return {
+      user: toSafeUser(result),
       ...tokens,
     };
   },

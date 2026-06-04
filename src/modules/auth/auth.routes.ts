@@ -23,6 +23,10 @@ authRouter.post(
   authController.login,
 );
 
+authRouter.get('/google', authController.googleLoginUrl);
+
+authRouter.get('/google/callback', authController.googleCallback);
+
 authRouter.get('/me', authenticate, authController.me);
 
 authRouter.post(

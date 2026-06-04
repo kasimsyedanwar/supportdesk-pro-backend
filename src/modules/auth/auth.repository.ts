@@ -1,4 +1,10 @@
-import { Prisma, PrismaClient, UserRole, UserStatus } from '@prisma/client';
+import {
+  OAuthProvider,
+  Prisma,
+  PrismaClient,
+  UserRole,
+  UserStatus,
+} from '@prisma/client';
 import { prisma } from '../../config/prisma';
 
 type DbClient = PrismaClient | Prisma.TransactionClient;
@@ -64,6 +70,57 @@ export const authRepository = {
       where: { id: refreshTokenId },
       data: {
         revokedAt: new Date(),
+      },
+    });
+  },
+  findOAuthAccount(
+    data: {
+      provider: OAuthProvider;
+      providerAccountId: string;
+    },
+    client?: DbClient,
+  ) {
+    return db(client).oAuthAccount.findUnique({
+      where: {
+        provider_providerAccountId: {
+          provider: data.provider,
+          providerAccountId: data.providerAccountId,
+        },
+      },
+      include: {
+        user: true,
+      },
+    });
+  },
+
+  createOAuthAccount(
+    data: {
+      userId: string;
+      provider: OAuthProvider;
+      providerAccountId: string;
+      email: string;
+    },
+    client?: DbClient,
+  ) {
+    return db(client).oAuthAccount.create({
+      data,
+    });
+  },
+
+  createGoogleCustomer(
+    data: {
+      name: string;
+      email: string;
+    },
+    client?: DbClient,
+  ) {
+    return db(client).user.create({
+      data: {
+        name: data.name,
+        email: data.email,
+        passwordHash: null,
+        role: UserRole.CUSTOMER,
+        status: UserStatus.ACTIVE,
       },
     });
   },

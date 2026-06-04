@@ -210,3 +210,55 @@ npx tsx src/scripts/check-prisma.ts
 npm run prisma:studio
 npm run typecheck
 ```
+
+## Phase 6: JWT Auth and Refresh Tokens
+
+Implemented authentication using JWT access tokens and hashed refresh tokens.
+
+### Added
+
+- `POST /auth/register`
+- `POST /auth/login`
+- `GET /auth/me`
+- `POST /auth/refresh`
+- `POST /auth/logout`
+- Request validation using Zod
+- JWT access token generation and verification
+- Opaque refresh token generation
+- SHA-256 hashed refresh token storage
+- Refresh token rotation
+- Logout by refresh token revocation
+- Authentication middleware
+- Safe user response without password hash
+
+### Auth Design
+
+```txt
+Access token  -> short-lived JWT
+Refresh token -> random opaque token
+Database      -> stores only refresh token hash
+```
+
+## Phase 7: OAuth2 Login Foundation
+
+Implemented Google OAuth2 login foundation with account linking.
+
+### Added
+
+- `GET /auth/google`
+- `GET /auth/google/callback`
+- Google OAuth authorization URL generation
+- OAuth state signing and verification
+- Google authorization code exchange
+- Google ID token verification
+- OAuth account linking using `OAuthAccount`
+- Local user creation for new Google users
+- Existing user linking by verified email
+- SupportDesk JWT access token and refresh token after Google login
+
+### OAuth Design
+
+```txt
+Google login proves external identity.
+SupportDesk Pro still issues its own accessToken and refreshToken.
+```

@@ -36,6 +36,14 @@ const envSchema = z.object({
     .default(900),
 
   REFRESH_TOKEN_EXPIRES_IN_DAYS: z.coerce.number().int().positive().default(7),
+  GOOGLE_OAUTH_CLIENT_ID: z.string().optional(),
+  GOOGLE_OAUTH_CLIENT_SECRET: z.string().optional(),
+
+  GOOGLE_OAUTH_REDIRECT_URI: z
+    .url()
+    .default('http://localhost:5000/auth/google/callback'),
+
+  OAUTH_STATE_SECRET: z.string().min(32),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

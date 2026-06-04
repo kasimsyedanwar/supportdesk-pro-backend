@@ -47,4 +47,42 @@ export const authController = {
 
     return sendSuccess(res, 200, 'User logged out successfully', result);
   }),
+  googleLoginUrl: asyncHandler(async (_req, res) => {
+    const result = authService.getGoogleLoginUrl();
+
+    return sendSuccess(
+      res,
+      200,
+      'Google OAuth URL generated successfully',
+      result,
+    );
+  }),
+
+  googleCallback: asyncHandler(async (req, res) => {
+    const code = req.query.code;
+    const state = req.query.state;
+
+    if (typeof code !== 'string' || code.trim().length === 0) {
+      throw new AppError(
+        400,
+        'Google OAuth code is required',
+        'GOOGLE_CODE_REQUIRED',
+      );
+    }
+
+    if (typeof state !== 'string' || state.trim().length === 0) {
+      throw new AppError(
+        400,
+        'OAuth state is required',
+        'OAUTH_STATE_REQUIRED',
+      );
+    }
+
+    const result = await authService.loginWithGoogle({
+      code,
+      state,
+    });
+
+    return sendSuccess(res, 200, 'Google login successful', result);
+  }),
 };
