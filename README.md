@@ -79,3 +79,30 @@ npm run typecheck
 npm run build
 npm start
 ```
+
+## Phase 2: Core Config, Logging, Errors, Request ID, and Error Handler
+
+Implemented the core backend infrastructure for configuration, logging, request tracing, and error handling.
+
+### Added
+
+- Environment variable validation using Zod
+- `.env.example`
+- Pino structured logger
+- Request ID middleware
+- Request logging middleware
+- Central `AppError` class
+- Central success response helper
+- 404 not found middleware
+- Global error handler
+
+### Standard Success Response
+
+```json
+{
+  "success": true,
+  "message": "SupportDesk Pro API is healthy",
+  "data": {},
+  "requestId": "request-id"
+}
+```

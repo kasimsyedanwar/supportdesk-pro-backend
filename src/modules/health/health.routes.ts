@@ -1,16 +1,15 @@
-import { Router, Request, Response } from 'express';
+import { Router } from 'express';
+import { env } from '../../config/env';
+import { sendSuccess } from '../../common/utils/api-response';
 
 export const healthRouter = Router();
 
-healthRouter.get('/health', (_req: Request, res: Response) => {
-  return res.status(200).json({
-    success: true,
-    message: 'SupportDesk Pro Api is healthy',
-    data: {
-      service: 'supportdesk-pro-backend',
-      uptime: process.uptime(),
-      timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV ?? 'development',
-    },
+healthRouter.get('/health', (_req, res) => {
+  return sendSuccess(res, 200, 'SupportDesk Pro API is healthy', {
+    service: 'supportdesk-pro-backend',
+    version: '1.0.0',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+    environment: env.NODE_ENV,
   });
 });
