@@ -4,6 +4,8 @@ import { prisma } from '../../config/prisma';
 import { ticketAccessService } from '../tickets/ticket-access.service';
 import { CreatePresignedUrlInput } from './attachments.schemas';
 import { attachmentsRepository } from './attachments.repository';
+import { activityLogService } from '../activity-logs/activity-log.service';
+import { ActivityLogType } from '../activity-logs/activity-log.types';
 import { saveAttachmentLocally } from './local-storage.service';
 import { createAttachmentPresignedUrl } from './s3-presigned.service';
 
@@ -55,6 +57,20 @@ export const attachmentsService = {
       );
 
       return attachment;
+    });
+    await activityLogService.createActivityLogSafely({
+      ticketId,
+      actorId: user.id,
+      actorRole: user.role,
+      type: ActivityLogType.ATTACHMENT_UPLOADED,
+      message: 'Attachment uploaded',
+      metadata: {
+        attachmentId: result.id,
+        fileName: result.fileName,
+        mimeType: result.mimeType,
+        sizeBytes: result.sizeBytes,
+        storageProvider: result.storageProvider,
+      },
     });
 
     return {

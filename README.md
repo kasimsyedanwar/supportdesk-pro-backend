@@ -383,3 +383,29 @@ CUSTOMER -> can upload/list attachments on own tickets
 AGENT    -> can upload/list attachments on assigned tickets
 ADMIN    -> can upload/list attachments on any ticket
 ```
+
+## Phase 13: MongoDB Activity Logs
+
+Implemented MongoDB-based activity logs for ticket history.
+
+### Added
+
+- `GET /tickets/:ticketId/activity`
+- MongoDB `activity_logs` collection
+- Activity logging for ticket creation
+- Activity logging for ticket assignment
+- Activity logging for status changes
+- Activity logging for comments
+- Activity logging for attachment uploads
+- Customer-safe activity filtering for internal notes
+- MongoDB indexes for ticket activity timeline queries
+
+### Activity Log Events
+
+```txt
+TICKET_CREATED
+TICKET_ASSIGNED
+STATUS_CHANGED
+COMMENT_ADDED
+ATTACHMENT_UPLOADED
+```

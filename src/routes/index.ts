@@ -12,6 +12,7 @@ import {
   agentUsersRouter,
   usersRouter,
 } from '../modules/users/users.routes';
+import { activityLogRouter } from '../modules/activity-logs/activity-log.routes';
 import { attachmentsRouter } from '../modules/attachments/attachments.routes';
 
 export const apiRouter = Router();
@@ -26,5 +27,6 @@ apiRouter.use('/agent', agentUsersRouter);
 apiRouter.use('/tickets', ticketsRouter);
 apiRouter.use('/tickets', commentsRouter);
 apiRouter.use('/tickets', attachmentsRouter);
+apiRouter.use('/tickets', activityLogRouter);
 apiRouter.use('/admin/tickets', adminTicketsRouter);
 apiRouter.use('/agent/tickets', agentTicketsRouter);

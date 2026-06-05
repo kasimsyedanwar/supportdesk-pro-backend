@@ -25,7 +25,7 @@ const envSchema = z.object({
   REDIS_URL: z.string().url(),
 
   MONGO_URL: z.string().min(1),
-  MONGO_DB_NAME: z.string().min(1),
+  MONGO_DB_NAME: z.string().min(1).default('supportdesk_pro_activity'),
 
   ACCESS_TOKEN_SECRET: z.string().min(32),
 

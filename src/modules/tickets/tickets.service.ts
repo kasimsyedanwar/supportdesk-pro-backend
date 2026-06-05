@@ -6,6 +6,13 @@ import {
 } from '@prisma/client';
 import { AppError } from '../../common/errors/app-error';
 import { prisma } from '../../config/prisma';
+import { activityLogService } from '../activity-logs/activity-log.service';
+import { ActivityLogType } from '../activity-logs/activity-log.types';
+import { ticketAccessService } from './ticket-access.service';
+import {
+  getAllowedAgentTransitions,
+  isAllowedAgentStatusTransition,
+} from './ticket-lifecycle';
 import {
   AssignTicketInput,
   CreateTicketInput,
@@ -13,11 +20,6 @@ import {
   UpdateTicketInput,
   UpdateTicketStatusInput,
 } from './ticket.schemas';
-import { ticketAccessService } from './ticket-access.service';
-import {
-  getAllowedAgentTransitions,
-  isAllowedAgentStatusTransition,
-} from './ticket-lifecycle';
 import { ticketsRepository } from './tickets.repository';
 
 type CurrentUser = {
@@ -47,6 +49,19 @@ export const ticketsService = {
     const ticket = await ticketsRepository.createTicketWithOutbox({
       customerId: user.id,
       input,
+    });
+
+    await activityLogService.createActivityLogSafely({
+      ticketId: ticket.id,
+      actorId: user.id,
+      actorRole: user.role,
+      type: ActivityLogType.TICKET_CREATED,
+      message: 'Ticket created',
+      metadata: {
+        title: ticket.title,
+        priority: ticket.priority,
+        status: ticket.status,
+      },
     });
 
     return {
@@ -132,6 +147,7 @@ export const ticketsService = {
       ticket,
     };
   },
+
   async assignTicket(
     ticketId: string,
     user: CurrentUser,
@@ -202,8 +218,9 @@ export const ticketsService = {
       }
 
       const activeAssignment = ticket.assignments[0];
+      const previousAgentId = activeAssignment?.agent.id ?? null;
 
-      if (activeAssignment?.agent.id === input.agentId) {
+      if (previousAgentId === input.agentId) {
         throw new AppError(
           409,
           'Ticket is already assigned to this agent',
@@ -231,7 +248,7 @@ export const ticketsService = {
             ticketId,
             agentId: input.agentId,
             assignedBy: user.id,
-            previousAgentId: activeAssignment?.agent.id ?? null,
+            previousAgentId,
           },
         },
         tx,
@@ -249,10 +266,26 @@ export const ticketsService = {
       return {
         ticket: updatedTicket,
         assignment,
+        previousAgentId,
       };
     });
 
-    return result;
+    await activityLogService.createActivityLogSafely({
+      ticketId,
+      actorId: user.id,
+      actorRole: user.role,
+      type: ActivityLogType.TICKET_ASSIGNED,
+      message: 'Ticket assigned',
+      metadata: {
+        assignedAgentId: input.agentId,
+        previousAgentId: result.previousAgentId,
+      },
+    });
+
+    return {
+      ticket: result.ticket,
+      assignment: result.assignment,
+    };
   },
 
   async updateAssignedTicketStatus(
@@ -302,6 +335,18 @@ export const ticketsService = {
       actorId: user.id,
       fromStatus: currentTicket.status,
       toStatus: input.status,
+    });
+
+    await activityLogService.createActivityLogSafely({
+      ticketId,
+      actorId: user.id,
+      actorRole: user.role,
+      type: ActivityLogType.STATUS_CHANGED,
+      message: 'Ticket status changed',
+      metadata: {
+        fromStatus: currentTicket.status,
+        toStatus: input.status,
+      },
     });
 
     return {

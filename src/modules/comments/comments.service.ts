@@ -2,6 +2,8 @@ import { CommentVisibility, UserRole } from '@prisma/client';
 import { prisma } from '../../config/prisma';
 import { ticketAccessService } from '../tickets/ticket-access.service';
 import { CreateCommentInput } from './comments.schemas';
+import { activityLogService } from '../activity-logs/activity-log.service';
+import { ActivityLogType } from '../activity-logs/activity-log.types';
 import { commentsRepository } from './comments.repository';
 
 type CurrentUser = {
@@ -46,6 +48,18 @@ export const commentsService = {
       );
 
       return comment;
+    });
+
+    await activityLogService.createActivityLogSafely({
+      ticketId,
+      actorId: user.id,
+      actorRole: user.role,
+      type: ActivityLogType.COMMENT_ADDED,
+      message: 'Comment added',
+      metadata: {
+        commentId: result.id,
+        visibility: result.visibility,
+      },
     });
 
     return {

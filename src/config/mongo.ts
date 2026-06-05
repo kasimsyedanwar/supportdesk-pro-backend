@@ -1,26 +1,43 @@
-import { MongoClient } from 'mongodb';
+import { Db, MongoClient } from 'mongodb';
 import { env } from './env';
+import { logger } from './logger';
 
-export const mongoClient = new MongoClient(env.MONGO_URL, {
-  serverSelectionTimeoutMS: 2000,
-});
-
-let isMongoConnected = false;
+let mongoClient: MongoClient | null = null;
+let mongoDb: Db | null = null;
 
 export const connectMongo = async (): Promise<void> => {
-  if (!isMongoConnected) {
-    await mongoClient.connect();
-    isMongoConnected = true;
+  if (mongoClient && mongoDb) {
+    return;
   }
+
+  mongoClient = new MongoClient(env.MONGO_URL);
+  await mongoClient.connect();
+
+  mongoDb = mongoClient.db(env.MONGO_DB_NAME);
+
+  logger.info('MongoDB connected');
+};
+
+export const getMongoDb = (): Db => {
+  if (!mongoDb) {
+    throw new Error('MongoDB is not connected');
+  }
+
+  return mongoDb;
 };
 
 export const checkMongoConnection = async (): Promise<void> => {
-  await connectMongo();
+  if (!mongoDb) {
+    await connectMongo();
+  }
 
-  const db = mongoClient.db(env.MONGO_DB_NAME);
-  const result = await db.command({ ping: 1 });
+  await getMongoDb().command({ ping: 1 });
+};
 
-  if (result.ok !== 1) {
-    throw new Error('MongoDB health check failed');
+export const disconnectMongo = async (): Promise<void> => {
+  if (mongoClient) {
+    await mongoClient.close();
+    mongoClient = null;
+    mongoDb = null;
   }
 };
