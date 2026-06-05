@@ -1,535 +1,204 @@
 # SupportDesk Pro Backend
 
-A professional TypeScript backend for a support ticket management system
+SupportDesk Pro is a backend API for a customer support ticket management system. It supports customer, agent, and admin workflows such as ticket creation, ticket assignment, status updates, comments, attachments, dashboards, activity logs, caching, rate limiting, and notification event processing.
 
-## Overview
-
-SupportDesk Pro is a backend API for managing customer support tickets.
-
-The final system will support customer, agent, and admin workflows such as ticket creation, assignment, status lifecycle management, comments, attachments, dashboards, and notification processing.
-
-The project is being built stage by stage with a focus on clean architecture, TypeScript ownership, testing, and interview-ready explanations.
-
-## Current Implementation Status
-
-The project is currently in the initial backend setup stage.
-
-Implemented so far:
-
-- TypeScript project setup
-- Express.js server setup
-- Central route registration
-- Health check endpoint
-- Basic 404 route handling
-- TypeScript type checking
-- Production build script
-
-## Tech Stack Currently Used
+## Tech Stack
 
 - TypeScript
 - Node.js
 - Express.js
-
-## Planned Tech Stack
-
-The following technologies will be added gradually as the project grows:
-
 - PostgreSQL
 - Prisma ORM
 - Redis
 - MongoDB
-- JWT authentication
-- OAuth2 foundation
-- RBAC
-- AWS S3
-- AWS Lambda
-- DynamoDB
-- Docker
-- GitHub Actions
+- DynamoDB Local
+- JWT Authentication
+- OAuth2 Foundation
+- Zod
 - Jest
-- Postman
+- Supertest
+- Docker Compose
+- GitHub Actions
 
-## Current API Endpoints
+## Main Features
 
-### Health Check
+- Customer, Agent, and Admin role-based access control
+- JWT login with refresh token rotation
+- Google OAuth2 login foundation
+- Ticket creation, listing, filtering, and updating
+- Admin ticket assignment to agents
+- Agent ticket status lifecycle workflow
+- Public comments and internal notes
+- Ticket attachment upload support
+- MongoDB activity logs for ticket history
+- Redis caching and rate limiting
+- Admin and agent dashboard APIs
+- PostgreSQL outbox pattern
+- DynamoDB Local notification event projection
+- Unit and integration testing
+- Lightweight GitHub Actions CI pipeline
+
+## Local Setup
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Start local services
+
+```bash
+docker compose up -d
+```
+
+This starts PostgreSQL, Redis, MongoDB, and DynamoDB Local.
+
+### 3. Setup environment variables
+
+Create a `.env` file from `.env.example`.
+
+```bash
+copy .env.example .env
+```
+
+For Mac/Linux:
+
+```bash
+cp .env.example .env
+```
+
+Generate two secrets:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+Use one value for:
+
+```env
+ACCESS_TOKEN_SECRET=
+```
+
+Use another value for:
+
+```env
+OAUTH_STATE_SECRET=
+```
+
+For local development, real AWS keys are not required. DynamoDB uses local values:
+
+```env
+AWS_ACCESS_KEY_ID=local
+AWS_SECRET_ACCESS_KEY=local
+AWS_DYNAMODB_ENDPOINT=http://127.0.0.1:8000
+AWS_DYNAMODB_NOTIFICATION_EVENTS_TABLE=supportdesk_notification_events
+```
+
+### 4. Run database setup
+
+```bash
+npx prisma generate
+npx prisma migrate dev
+npm run db:seed
+npm run dynamodb:create-table
+```
+
+### 5. Start the backend
+
+```bash
+npm run dev
+```
+
+API base URL:
+
+```txt
+http://localhost:5000
+```
+
+Health check:
 
 ```txt
 GET /health
 ```
 
-## Phase 1: TypeScript Express Setup
-
-Implemented the initial TypeScript Express backend foundation.
-
-### Added
-
-- TypeScript configuration
-- Express app setup
-- Separate `app.ts` and `server.ts`
-- Central route registry
-- Health module
-- `GET /health` endpoint
-- Development, build, start, and typecheck scripts
-
-### Commands
-
-```bash
-npm run dev
-npm run typecheck
-npm run build
-npm start
-```
-
-## Phase 2: Core Config, Logging, Errors, Request ID, and Error Handler
-
-Implemented the core backend infrastructure for configuration, logging, request tracing, and error handling.
-
-### Added
-
-- Environment variable validation using Zod
-- `.env.example`
-- Pino structured logger
-- Request ID middleware
-- Request logging middleware
-- Central `AppError` class
-- Central success response helper
-- 404 not found middleware
-- Global error handler
-
-### Standard Success Response
-
-```json
-{
-  "success": true,
-  "message": "SupportDesk Pro API is healthy",
-  "data": {},
-  "requestId": "request-id"
-}
-```
-
-## Phase 3: Local Infra with Docker Compose
-
-Implemented local infrastructure using Docker Compose.
-
-### Added
-
-- PostgreSQL container
-- Redis container
-- MongoDB container
-- Docker Compose configuration
-- PostgreSQL health check
-- Redis health check
-- MongoDB health check
-- `GET /ready` readiness endpoint
-
-### Infrastructure
+Readiness check:
 
 ```txt
-PostgreSQL -> transactional source of truth
-Redis      -> cache and rate limiting
-MongoDB    -> flexible activity logs
+GET /ready
 ```
 
-## Phase 4: Prisma Schema and Migrations
-
-Implemented the initial PostgreSQL schema using Prisma ORM.
-
-### Added
-
-- Prisma setup
-- PostgreSQL datasource
-- User role and status enums
-- Ticket status and priority enums
-- User model
-- AgentProfile model
-- RefreshToken model
-- Ticket model
-- TicketAssignment model
-- Comment model
-- Attachment model
-- OutboxEvent model
-- Initial database migration
-- Shared Prisma client configuration
-
-### Core Database Responsibility
-
-PostgreSQL is the transactional source of truth for:
-
-- Users
-- Agent profiles
-- Refresh tokens
-- Tickets
-- Assignments
-- Comments
-- Attachment metadata
-- Outbox events
-
-### Commands
-
-```bash
-npx prisma format
-npx prisma migrate dev --name init_supportdesk_schema
-npx prisma generate
-npx prisma studio
-npm run typecheck
-npm run dev
-```
-
-## Phase 5: Seed Scripts
-
-Implemented repeatable local database seed data.
-
-### Added
-
-- Seed script using Prisma
-- Hashed passwords using bcrypt
-- 1 admin user
-- 2 agent users
-- 2 customer users
-- Agent profiles
-- Sample tickets
-- Sample ticket assignments
-- Sample comments
-- Sample outbox events
-
-### Seed Users
+## Seeded Users
 
 | Role     | Email                             | Password     |
 | -------- | --------------------------------- | ------------ |
-| ADMIN    | admin@supportdeskpro.dev          | Password@123 |
-| AGENT    | agent.tech@supportdeskpro.dev     | Password@123 |
-| AGENT    | agent.billing@supportdeskpro.dev  | Password@123 |
-| CUSTOMER | kasim.customer@supportdeskpro.dev | Password@123 |
-| CUSTOMER | demo.customer@supportdeskpro.dev  | Password@123 |
+| Admin    | admin@supportdeskpro.dev          | Password@123 |
+| Agent    | agent.tech@supportdeskpro.dev     | Password@123 |
+| Agent    | agent.billing@supportdeskpro.dev  | Password@123 |
+| Customer | kasim.customer@supportdeskpro.dev | Password@123 |
+| Customer | demo.customer@supportdeskpro.dev  | Password@123 |
 
-### Commands
+## Important API Routes
+
+| Module        | Routes                                                           |
+| ------------- | ---------------------------------------------------------------- |
+| Auth          | `/auth/register`, `/auth/login`, `/auth/refresh`, `/auth/logout` |
+| Users         | `/users/me`, `/admin/users`, `/agent/me`                         |
+| Tickets       | `/tickets`, `/tickets/my`, `/tickets/:ticketId`                  |
+| Admin Tickets | `/admin/tickets`, `/admin/tickets/:ticketId/assign`              |
+| Agent Tickets | `/agent/tickets`, `/agent/tickets/:ticketId/status`              |
+| Comments      | `/tickets/:ticketId/comments`                                    |
+| Attachments   | `/tickets/:ticketId/attachments`                                 |
+| Dashboards    | `/admin/dashboard`, `/agent/dashboard`                           |
+| Worker        | `/workers/notifications/process-local`                           |
+| Notifications | `/admin/notification-events`                                     |
+
+## Testing
+
+Run TypeScript check:
 
 ```bash
-npm run db:seed
-npx tsx src/scripts/check-prisma.ts
-npm run prisma:studio
 npm run typecheck
 ```
 
-## Phase 6: JWT Auth and Refresh Tokens
+Run production build:
 
-Implemented authentication using JWT access tokens and hashed refresh tokens.
-
-### Added
-
-- `POST /auth/register`
-- `POST /auth/login`
-- `GET /auth/me`
-- `POST /auth/refresh`
-- `POST /auth/logout`
-- Request validation using Zod
-- JWT access token generation and verification
-- Opaque refresh token generation
-- SHA-256 hashed refresh token storage
-- Refresh token rotation
-- Logout by refresh token revocation
-- Authentication middleware
-- Safe user response without password hash
-
-### Auth Design
-
-```txt
-Access token  -> short-lived JWT
-Refresh token -> random opaque token
-Database      -> stores only refresh token hash
+```bash
+npm run build
 ```
 
-## Phase 7: OAuth2 Login Foundation
+Run unit tests:
 
-Implemented Google OAuth2 login foundation with account linking.
-
-### Added
-
-- `GET /auth/google`
-- `GET /auth/google/callback`
-- Google OAuth authorization URL generation
-- OAuth state signing and verification
-- Google authorization code exchange
-- Google ID token verification
-- OAuth account linking using `OAuthAccount`
-- Local user creation for new Google users
-- Existing user linking by verified email
-- SupportDesk JWT access token and refresh token after Google login
-
-### OAuth Design
-
-```txt
-Google login proves external identity.
-SupportDesk Pro still issues its own accessToken and refreshToken.
+```bash
+npm run test:unit
 ```
 
-## Phase 8: RBAC and Ownership Guards
+Run integration tests:
 
-Implemented reusable role-based access control and ticket ownership guard logic.
-
-### Added
-
-- Reusable `authorizeRoles` middleware
-- `GET /users/me` for authenticated users
-- `GET /admin/users` protected by ADMIN role
-- `GET /agent/me` protected by AGENT role
-- Ticket ownership guard service for future ticket APIs
-
-### RBAC Rule
-
-```txt
-RBAC checks whether the logged-in user's role can access a route.
+```bash
+npm run test:integration
 ```
 
-## Phase 9: Ticket CRUD
-
-Implemented core ticket APIs with role-based access and ownership checks.
-
-### Added
-
-- `POST /tickets`
-- `GET /tickets/my`
-- `GET /tickets/:ticketId`
-- `PATCH /tickets/:ticketId`
-- `GET /admin/tickets`
-- `GET /agent/tickets`
-- Ticket request validation using Zod
-- Customer ticket creation
-- Customer own ticket listing
-- Customer own OPEN ticket update
-- Admin all-ticket listing
-- Agent assigned-ticket listing
-- Ticket detail access using ownership guard
-- Ticket creation outbox event
-
-### Ticket Access Rules
-
-```txt
-CUSTOMER -> create tickets, view own tickets, update own OPEN tickets
-AGENT    -> view assigned tickets
-ADMIN    -> view all tickets
-```
-
-## Phase 10: Assignment and Status Lifecycle
-
-Implemented ticket assignment and agent status lifecycle workflows.
-
-### Added
-
-- `PATCH /admin/tickets/:ticketId/assign`
-- `PATCH /agent/tickets/:ticketId/status`
-- Admin ticket assignment
-- Ticket reassignment with old assignment closed using `unassignedAt`
-- Agent-only assigned ticket status updates
-- Allowed status transition rules
-- `TICKET_ASSIGNED` outbox event
-- `STATUS_CHANGED` outbox event
-
-### Assignment Rules
-
-```txt
-ADMIN can assign or reassign tickets.
-Target assignee must be an ACTIVE AGENT.
-Target agent must have AgentProfile.
-Unavailable agents cannot be assigned.
-CLOSED tickets cannot be assigned.
-```
-
-## Phase 11: Ticket Comments
-
-Implemented role-aware ticket comments.
-
-### Added
-
-- `POST /tickets/:ticketId/comments`
-- `GET /tickets/:ticketId/comments`
-- Public customer comments
-- Agent/admin internal notes
-- Customer restriction from creating internal notes
-- Customer restriction from viewing internal notes
-- Assigned-agent comment access
-- Admin all-ticket comment access
-- `COMMENT_ADDED` outbox event
-
-### Comment Rules
-
-```txt
-CUSTOMER -> can add PUBLIC comments on own tickets only
-CUSTOMER -> cannot add or view INTERNAL notes
-AGENT    -> can add PUBLIC or INTERNAL comments on assigned tickets
-ADMIN    -> can add PUBLIC or INTERNAL comments on any ticket
-```
-
-## Phase 12: Attachments and S3 Prep
-
-Implemented ticket attachment support with local upload and S3 presigned URL preparation.
-
-### Added
-
-- `POST /tickets/:ticketId/attachments`
-- `GET /tickets/:ticketId/attachments`
-- `POST /tickets/:ticketId/attachments/presigned-url`
-- Local file upload using Multer
-- File type and size validation
-- Attachment metadata stored in PostgreSQL
-- `ATTACHMENT_UPLOADED` outbox event
-- S3 presigned URL generation foundation
-- S3 configuration guard
-
-### Attachment Rules
-
-```txt
-CUSTOMER -> can upload/list attachments on own tickets
-AGENT    -> can upload/list attachments on assigned tickets
-ADMIN    -> can upload/list attachments on any ticket
-```
-
-## Phase 13: MongoDB Activity Logs
-
-Implemented MongoDB-based activity logs for ticket history.
-
-### Added
-
-- `GET /tickets/:ticketId/activity`
-- MongoDB `activity_logs` collection
-- Activity logging for ticket creation
-- Activity logging for ticket assignment
-- Activity logging for status changes
-- Activity logging for comments
-- Activity logging for attachment uploads
-- Customer-safe activity filtering for internal notes
-- MongoDB indexes for ticket activity timeline queries
-
-### Activity Log Events
-
-```txt
-TICKET_CREATED
-TICKET_ASSIGNED
-STATUS_CHANGED
-COMMENT_ADDED
-ATTACHMENT_UPLOADED
-```
-
-## Phase 14: Redis Cache and Rate Limit
-
-Implemented Redis-backed caching and rate limiting.
-
-### Added
-
-- Redis JSON cache helper
-- Ticket list caching
-- Ticket detail caching
-- Cache invalidation after ticket changes
-- Cache invalidation after comments and attachments
-- Redis-backed fixed-window rate limiter
-- Rate limit response headers
-
-### Cached APIs
-
-```txt
-GET /tickets/my
-GET /tickets/:ticketId
-GET /admin/tickets
-GET /agent/tickets
-```
-
-## Phase 15: Dashboard Aggregations
-
-Implemented admin and agent dashboard aggregation APIs.
-
-### Added
-
-- `GET /admin/dashboard`
-- `GET /agent/dashboard`
-- Dashboard date filters using `from` and `to`
-- Admin ticket metrics
-- Admin user/agent metrics
-- Admin engagement metrics
-- Agent assigned ticket metrics
-- Agent engagement metrics
-- Recent tickets for dashboards
-- Redis caching for dashboard responses
-- Dashboard cache invalidation after ticket/comment/attachment writes
-
-### Admin Dashboard Metrics
-
-```txt
-total tickets
-tickets by status
-tickets by priority
-assigned tickets
-unassigned tickets
-users by role
-active agents
-unavailable agents
-comments count
-attachments count
-average resolution time
-recent tickets
-```
-
-## Phase 16: DynamoDB + Lambda Prep
-
-Implemented a Lambda-style local notification processor using PostgreSQL outbox events and DynamoDB event state.
-
-### Added
-
-- `POST /workers/notifications/process-local`
-- `GET /admin/notification-events`
-- PostgreSQL OutboxEvent processing
-- DynamoDB notification event record design
-- Notification message builder
-- Local Lambda-style processor service
-- Idempotency check using outbox event ID
-- Outbox status transitions: PENDING -> PROCESSING -> PROCESSED / FAILED
-
-### Event Flow
-
-```txt
-Ticket/comment/attachment action
- -> PostgreSQL OutboxEvent created
- -> Local notification processor reads PENDING events
- -> Processor writes notification state to DynamoDB
- -> Processor marks OutboxEvent PROCESSED
-```
-
-## Phase 17: Jest Tests
-
-Implemented automated tests for unit logic and backend API workflows.
-
-### Added
-
-- Jest + ts-jest setup
-- Supertest API integration testing
-- Unit tests for ticket lifecycle rules
-- Unit tests for validation schemas
-- Unit tests for notification message builder
-- Integration tests for authentication and RBAC
-- Integration tests for ticket workflow
-- Integration tests for dashboard access
-
-### Test Commands
+Run all tests:
 
 ```bash
 npm test
-npm run test:unit
-npm run test:integration
-npm run test:coverage
 ```
 
-## Local Development
+## CI Pipeline
 
-SupportDesk Pro runs locally with the backend on the host machine and supporting services in Docker.
+This project uses GitHub Actions to run a lightweight CI pipeline on push.
 
-### Services
+The CI pipeline checks:
 
-- PostgreSQL for main relational data
-- Redis for cache and rate limiting
-- MongoDB for activity/audit logs
-- DynamoDB Local for notification event projection
+- Dependency installation
+- Prisma Client generation
+- TypeScript typecheck
+- Production build
+- Jest unit tests
 
-### Start Services
+## Project Status
 
-```bash
-docker compose up -d
-```
+SupportDesk Pro is a local backend portfolio project focused on backend architecture, API development, authentication, authorization, testing, caching, activity logging, and event processing.
+
+Deployment is not included in the current version.
