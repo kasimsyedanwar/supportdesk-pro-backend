@@ -334,3 +334,28 @@ Target agent must have AgentProfile.
 Unavailable agents cannot be assigned.
 CLOSED tickets cannot be assigned.
 ```
+
+## Phase 11: Ticket Comments
+
+Implemented role-aware ticket comments.
+
+### Added
+
+- `POST /tickets/:ticketId/comments`
+- `GET /tickets/:ticketId/comments`
+- Public customer comments
+- Agent/admin internal notes
+- Customer restriction from creating internal notes
+- Customer restriction from viewing internal notes
+- Assigned-agent comment access
+- Admin all-ticket comment access
+- `COMMENT_ADDED` outbox event
+
+### Comment Rules
+
+```txt
+CUSTOMER -> can add PUBLIC comments on own tickets only
+CUSTOMER -> cannot add or view INTERNAL notes
+AGENT    -> can add PUBLIC or INTERNAL comments on assigned tickets
+ADMIN    -> can add PUBLIC or INTERNAL comments on any ticket
+```

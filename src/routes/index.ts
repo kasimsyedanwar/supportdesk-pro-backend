@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authRouter } from '../modules/auth/auth.routes';
+import { commentsRouter } from '../modules/comments/comments.routes';
 import { healthRouter } from '../modules/health/health.routes';
 import {
   adminTicketsRouter,
@@ -22,5 +23,6 @@ apiRouter.use('/admin/users', adminUsersRouter);
 apiRouter.use('/agent', agentUsersRouter);
 
 apiRouter.use('/tickets', ticketsRouter);
+apiRouter.use('/tickets', commentsRouter);
 apiRouter.use('/admin/tickets', adminTicketsRouter);
 apiRouter.use('/agent/tickets', agentTicketsRouter);
