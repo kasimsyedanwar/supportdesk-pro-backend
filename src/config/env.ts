@@ -44,6 +44,20 @@ const envSchema = z.object({
     .default('http://localhost:5000/auth/google/callback'),
 
   OAUTH_STATE_SECRET: z.string().min(32),
+  UPLOAD_DIR: z.string().min(1).default('uploads'),
+
+  MAX_UPLOAD_SIZE_BYTES: z.coerce.number().int().positive().default(5242880),
+
+  AWS_REGION: z.string().min(1).default('ap-south-1'),
+  AWS_S3_BUCKET: z.string().optional(),
+  AWS_ACCESS_KEY_ID: z.string().optional(),
+  AWS_SECRET_ACCESS_KEY: z.string().optional(),
+
+  S3_PRESIGNED_URL_EXPIRES_IN_SECONDS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(300),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

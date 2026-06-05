@@ -359,3 +359,27 @@ CUSTOMER -> cannot add or view INTERNAL notes
 AGENT    -> can add PUBLIC or INTERNAL comments on assigned tickets
 ADMIN    -> can add PUBLIC or INTERNAL comments on any ticket
 ```
+
+## Phase 12: Attachments and S3 Prep
+
+Implemented ticket attachment support with local upload and S3 presigned URL preparation.
+
+### Added
+
+- `POST /tickets/:ticketId/attachments`
+- `GET /tickets/:ticketId/attachments`
+- `POST /tickets/:ticketId/attachments/presigned-url`
+- Local file upload using Multer
+- File type and size validation
+- Attachment metadata stored in PostgreSQL
+- `ATTACHMENT_UPLOADED` outbox event
+- S3 presigned URL generation foundation
+- S3 configuration guard
+
+### Attachment Rules
+
+```txt
+CUSTOMER -> can upload/list attachments on own tickets
+AGENT    -> can upload/list attachments on assigned tickets
+ADMIN    -> can upload/list attachments on any ticket
+```
