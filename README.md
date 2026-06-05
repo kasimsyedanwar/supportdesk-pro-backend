@@ -516,3 +516,20 @@ npm run test:unit
 npm run test:integration
 npm run test:coverage
 ```
+
+## Local Development
+
+SupportDesk Pro runs locally with the backend on the host machine and supporting services in Docker.
+
+### Services
+
+- PostgreSQL for main relational data
+- Redis for cache and rate limiting
+- MongoDB for activity/audit logs
+- DynamoDB Local for notification event projection
+
+### Start Services
+
+```bash
+docker compose up -d
+```
