@@ -492,3 +492,27 @@ Ticket/comment/attachment action
  -> Processor writes notification state to DynamoDB
  -> Processor marks OutboxEvent PROCESSED
 ```
+
+## Phase 17: Jest Tests
+
+Implemented automated tests for unit logic and backend API workflows.
+
+### Added
+
+- Jest + ts-jest setup
+- Supertest API integration testing
+- Unit tests for ticket lifecycle rules
+- Unit tests for validation schemas
+- Unit tests for notification message builder
+- Integration tests for authentication and RBAC
+- Integration tests for ticket workflow
+- Integration tests for dashboard access
+
+### Test Commands
+
+```bash
+npm test
+npm run test:unit
+npm run test:integration
+npm run test:coverage
+```
