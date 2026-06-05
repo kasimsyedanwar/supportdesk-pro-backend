@@ -4,6 +4,7 @@ import { prisma } from '../../config/prisma';
 import { ticketAccessService } from '../tickets/ticket-access.service';
 import { CreatePresignedUrlInput } from './attachments.schemas';
 import { attachmentsRepository } from './attachments.repository';
+import { ticketCacheService } from '../tickets/ticket-cache.service';
 import { activityLogService } from '../activity-logs/activity-log.service';
 import { ActivityLogType } from '../activity-logs/activity-log.types';
 import { saveAttachmentLocally } from './local-storage.service';
@@ -72,6 +73,8 @@ export const attachmentsService = {
         storageProvider: result.storageProvider,
       },
     });
+
+    await ticketCacheService.invalidateTicket(ticketId);
 
     return {
       attachment: result,

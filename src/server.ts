@@ -4,6 +4,7 @@ import { env } from './config/env';
 import { logger } from './config/logger';
 import { connectMongo, disconnectMongo } from './config/mongo';
 import { prisma } from './config/prisma';
+import { disconnectRedis } from './config/redis';
 import { activityLogService } from './modules/activity-logs/activity-log.service';
 
 let server: Server;
@@ -31,10 +32,11 @@ const shutdown = (signal: string): void => {
   }
 
   server.close(() => {
-    Promise.all([prisma.$disconnect(), disconnectMongo()])
+    Promise.all([prisma.$disconnect(), disconnectMongo(), disconnectRedis()])
       .then(() => {
         logger.info('Prisma disconnected');
         logger.info('MongoDB disconnected');
+        logger.info('Redis disconnected');
         logger.info('Server closed');
         process.exit(0);
       })

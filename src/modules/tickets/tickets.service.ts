@@ -9,6 +9,7 @@ import { prisma } from '../../config/prisma';
 import { activityLogService } from '../activity-logs/activity-log.service';
 import { ActivityLogType } from '../activity-logs/activity-log.types';
 import { ticketAccessService } from './ticket-access.service';
+import { ticketCacheService } from './ticket-cache.service';
 import {
   getAllowedAgentTransitions,
   isAllowedAgentStatusTransition,
@@ -64,6 +65,8 @@ export const ticketsService = {
       },
     });
 
+    await ticketCacheService.invalidateTicketLists();
+
     return {
       ticket,
     };
@@ -78,12 +81,27 @@ export const ticketsService = {
       );
     }
 
+    const cacheKey = ticketCacheService.listKey('customer', user, query);
+
+    const cached = await ticketCacheService.get<{
+      tickets: unknown[];
+      pagination: ReturnType<typeof buildPagination>;
+    }>(cacheKey);
+
+    if (cached) {
+      return cached;
+    }
+
     const result = await ticketsRepository.listCustomerTickets(user.id, query);
 
-    return {
+    const response = {
       tickets: result.items,
       pagination: buildPagination(query, result.total),
     };
+
+    await ticketCacheService.set(cacheKey, response);
+
+    return response;
   },
 
   async listAgentTickets(user: CurrentUser, query: TicketListQuery) {
@@ -95,12 +113,27 @@ export const ticketsService = {
       );
     }
 
+    const cacheKey = ticketCacheService.listKey('agent', user, query);
+
+    const cached = await ticketCacheService.get<{
+      tickets: unknown[];
+      pagination: ReturnType<typeof buildPagination>;
+    }>(cacheKey);
+
+    if (cached) {
+      return cached;
+    }
+
     const result = await ticketsRepository.listAgentTickets(user.id, query);
 
-    return {
+    const response = {
       tickets: result.items,
       pagination: buildPagination(query, result.total),
     };
+
+    await ticketCacheService.set(cacheKey, response);
+
+    return response;
   },
 
   async listAdminTickets(user: CurrentUser, query: TicketListQuery) {
@@ -112,16 +145,41 @@ export const ticketsService = {
       );
     }
 
+    const cacheKey = ticketCacheService.listKey('admin', user, query);
+
+    const cached = await ticketCacheService.get<{
+      tickets: unknown[];
+      pagination: ReturnType<typeof buildPagination>;
+    }>(cacheKey);
+
+    if (cached) {
+      return cached;
+    }
+
     const result = await ticketsRepository.listAdminTickets(query);
 
-    return {
+    const response = {
       tickets: result.items,
       pagination: buildPagination(query, result.total),
     };
+
+    await ticketCacheService.set(cacheKey, response);
+
+    return response;
   },
 
   async getTicketById(ticketId: string, user: CurrentUser) {
     await ticketAccessService.ensureCanViewTicket(ticketId, user);
+
+    const cacheKey = ticketCacheService.detailKey(ticketId, user);
+
+    const cached = await ticketCacheService.get<{
+      ticket: unknown;
+    }>(cacheKey);
+
+    if (cached) {
+      return cached;
+    }
 
     const ticket = await ticketsRepository.findTicketById(ticketId);
 
@@ -129,9 +187,13 @@ export const ticketsService = {
       throw new AppError(404, 'Ticket not found', 'TICKET_NOT_FOUND');
     }
 
-    return {
+    const response = {
       ticket,
     };
+
+    await ticketCacheService.set(cacheKey, response);
+
+    return response;
   },
 
   async updateOwnTicket(
@@ -142,6 +204,8 @@ export const ticketsService = {
     await ticketAccessService.ensureCustomerCanUpdateTicket(ticketId, user);
 
     const ticket = await ticketsRepository.updateTicket(ticketId, input);
+
+    await ticketCacheService.invalidateTicket(ticketId);
 
     return {
       ticket,
@@ -282,6 +346,8 @@ export const ticketsService = {
       },
     });
 
+    await ticketCacheService.invalidateTicket(ticketId);
+
     return {
       ticket: result.ticket,
       assignment: result.assignment,
@@ -348,6 +414,8 @@ export const ticketsService = {
         toStatus: input.status,
       },
     });
+
+    await ticketCacheService.invalidateTicket(ticketId);
 
     return {
       ticket,

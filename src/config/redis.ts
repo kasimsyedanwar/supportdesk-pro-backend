@@ -1,20 +1,46 @@
 import Redis from 'ioredis';
 import { env } from './env';
+import { logger } from './logger';
 
-export const redisClient = new Redis(env.REDIS_URL, {
-  lazyConnect: true,
-  maxRetriesPerRequest: 1,
-  connectTimeout: 2000,
-});
+let redisClient: Redis | null = null;
 
-export const checkRedisConnection = async (): Promise<void> => {
-  if (redisClient.status === 'wait') {
-    await redisClient.connect();
+export const connectRedis = (): Redis => {
+  if (redisClient) {
+    return redisClient;
   }
 
-  const response = await redisClient.ping();
+  redisClient = new Redis(env.REDIS_URL, {
+    maxRetriesPerRequest: 3,
+    enableReadyCheck: true,
+  });
 
-  if (response !== 'PONG') {
-    throw new Error('Redis health check failed');
+  redisClient.on('connect', () => {
+    logger.info('Redis connected');
+  });
+
+  redisClient.on('error', (error) => {
+    logger.error({ error }, 'Redis error');
+  });
+
+  return redisClient;
+};
+
+export const getRedisClient = (): Redis => {
+  if (!redisClient) {
+    return connectRedis();
+  }
+
+  return redisClient;
+};
+
+export const checkRedisConnection = async (): Promise<void> => {
+  const redis = getRedisClient();
+  await redis.ping();
+};
+
+export const disconnectRedis = async (): Promise<void> => {
+  if (redisClient) {
+    await redisClient.quit();
+    redisClient = null;
   }
 };

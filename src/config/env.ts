@@ -58,6 +58,11 @@ const envSchema = z.object({
     .int()
     .positive()
     .default(300),
+  CACHE_TTL_SECONDS: z.coerce.number().int().positive().default(60),
+
+  RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().int().positive().default(60),
+
+  RATE_LIMIT_MAX_REQUESTS: z.coerce.number().int().positive().default(100),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

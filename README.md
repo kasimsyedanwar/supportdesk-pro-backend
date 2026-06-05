@@ -409,3 +409,26 @@ STATUS_CHANGED
 COMMENT_ADDED
 ATTACHMENT_UPLOADED
 ```
+
+## Phase 14: Redis Cache and Rate Limit
+
+Implemented Redis-backed caching and rate limiting.
+
+### Added
+
+- Redis JSON cache helper
+- Ticket list caching
+- Ticket detail caching
+- Cache invalidation after ticket changes
+- Cache invalidation after comments and attachments
+- Redis-backed fixed-window rate limiter
+- Rate limit response headers
+
+### Cached APIs
+
+```txt
+GET /tickets/my
+GET /tickets/:ticketId
+GET /admin/tickets
+GET /agent/tickets
+```

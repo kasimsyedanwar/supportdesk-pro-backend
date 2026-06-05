@@ -2,6 +2,7 @@ import { CommentVisibility, UserRole } from '@prisma/client';
 import { prisma } from '../../config/prisma';
 import { ticketAccessService } from '../tickets/ticket-access.service';
 import { CreateCommentInput } from './comments.schemas';
+import { ticketCacheService } from '../tickets/ticket-cache.service';
 import { activityLogService } from '../activity-logs/activity-log.service';
 import { ActivityLogType } from '../activity-logs/activity-log.types';
 import { commentsRepository } from './comments.repository';
@@ -61,6 +62,8 @@ export const commentsService = {
         visibility: result.visibility,
       },
     });
+
+    await ticketCacheService.invalidateTicket(ticketId);
 
     return {
       comment: result,
