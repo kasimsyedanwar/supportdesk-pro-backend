@@ -1,4 +1,5 @@
 import {
+  OutboxEventStatus,
   OutboxEventType,
   Prisma,
   PrismaClient,
@@ -128,6 +129,60 @@ export const ticketsRepository = {
       where: { id: ticketId },
       data: input,
       include: ticketInclude,
+    });
+  },
+  listPendingOutboxEvents(limit: number, client?: DbClient) {
+    return db(client).outboxEvent.findMany({
+      where: {
+        status: OutboxEventStatus.PENDING,
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+      take: limit,
+    });
+  },
+
+  markOutboxEventProcessing(outboxEventId: string, client?: DbClient) {
+    return db(client).outboxEvent.update({
+      where: {
+        id: outboxEventId,
+      },
+      data: {
+        status: OutboxEventStatus.PROCESSING,
+        retryCount: {
+          increment: 1,
+        },
+      },
+    });
+  },
+
+  markOutboxEventProcessed(outboxEventId: string, client?: DbClient) {
+    return db(client).outboxEvent.update({
+      where: {
+        id: outboxEventId,
+      },
+      data: {
+        status: OutboxEventStatus.PROCESSED,
+        processedAt: new Date(),
+        lastError: null,
+      },
+    });
+  },
+
+  markOutboxEventFailed(
+    outboxEventId: string,
+    errorMessage: string,
+    client?: DbClient,
+  ) {
+    return db(client).outboxEvent.update({
+      where: {
+        id: outboxEventId,
+      },
+      data: {
+        status: OutboxEventStatus.FAILED,
+        lastError: errorMessage,
+      },
     });
   },
 

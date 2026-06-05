@@ -33,6 +33,14 @@ services:
     volumes:
       - supportdesk_mongo_data:/data/db
 
+  dynamodb:
+    image: amazon/dynamodb-local:latest
+    container_name: supportdesk_dynamodb
+    restart: unless-stopped
+    ports:
+      - '8000:8000'
+    command: '-jar DynamoDBLocal.jar -sharedDb -inMemory'
+
 volumes:
   supportdesk_postgres_data:
   supportdesk_redis_data:

@@ -467,3 +467,28 @@ attachments count
 average resolution time
 recent tickets
 ```
+
+## Phase 16: DynamoDB + Lambda Prep
+
+Implemented a Lambda-style local notification processor using PostgreSQL outbox events and DynamoDB event state.
+
+### Added
+
+- `POST /workers/notifications/process-local`
+- `GET /admin/notification-events`
+- PostgreSQL OutboxEvent processing
+- DynamoDB notification event record design
+- Notification message builder
+- Local Lambda-style processor service
+- Idempotency check using outbox event ID
+- Outbox status transitions: PENDING -> PROCESSING -> PROCESSED / FAILED
+
+### Event Flow
+
+```txt
+Ticket/comment/attachment action
+ -> PostgreSQL OutboxEvent created
+ -> Local notification processor reads PENDING events
+ -> Processor writes notification state to DynamoDB
+ -> Processor marks OutboxEvent PROCESSED
+```

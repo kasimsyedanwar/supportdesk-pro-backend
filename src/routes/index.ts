@@ -16,6 +16,8 @@ import {
   adminDashboardRouter,
   agentDashboardRouter,
 } from '../modules/dashboard/dashboard.routes';
+import { notificationEventsRouter } from '../modules/notifications/notification-events.routes';
+import { workersRouter } from '../modules/workers/workers.routes';
 import { activityLogRouter } from '../modules/activity-logs/activity-log.routes';
 import { attachmentsRouter } from '../modules/attachments/attachments.routes';
 
@@ -36,3 +38,6 @@ apiRouter.use('/admin/tickets', adminTicketsRouter);
 apiRouter.use('/agent/tickets', agentTicketsRouter);
 apiRouter.use('/admin/dashboard', adminDashboardRouter);
 apiRouter.use('/agent/dashboard', agentDashboardRouter);
+
+apiRouter.use('/workers', workersRouter);
+apiRouter.use('/admin/notification-events', notificationEventsRouter);

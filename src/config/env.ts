@@ -63,6 +63,12 @@ const envSchema = z.object({
   RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().int().positive().default(60),
 
   RATE_LIMIT_MAX_REQUESTS: z.coerce.number().int().positive().default(100),
+  AWS_DYNAMODB_NOTIFICATION_EVENTS_TABLE: z
+    .string()
+    .min(1)
+    .default('supportdesk_notification_events'),
+
+  AWS_DYNAMODB_ENDPOINT: z.string().optional(),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);
