@@ -3,6 +3,7 @@ import { prisma } from '../../config/prisma';
 import { ticketAccessService } from '../tickets/ticket-access.service';
 import { CreateCommentInput } from './comments.schemas';
 import { ticketCacheService } from '../tickets/ticket-cache.service';
+import { dashboardCacheService } from '../dashboard/dashboard-cache.service';
 import { activityLogService } from '../activity-logs/activity-log.service';
 import { ActivityLogType } from '../activity-logs/activity-log.types';
 import { commentsRepository } from './comments.repository';
@@ -64,6 +65,7 @@ export const commentsService = {
     });
 
     await ticketCacheService.invalidateTicket(ticketId);
+    await dashboardCacheService.invalidateDashboards();
 
     return {
       comment: result,

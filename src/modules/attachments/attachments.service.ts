@@ -3,6 +3,7 @@ import { AppError } from '../../common/errors/app-error';
 import { prisma } from '../../config/prisma';
 import { ticketAccessService } from '../tickets/ticket-access.service';
 import { CreatePresignedUrlInput } from './attachments.schemas';
+import { dashboardCacheService } from '../dashboard/dashboard-cache.service';
 import { attachmentsRepository } from './attachments.repository';
 import { ticketCacheService } from '../tickets/ticket-cache.service';
 import { activityLogService } from '../activity-logs/activity-log.service';
@@ -75,6 +76,7 @@ export const attachmentsService = {
     });
 
     await ticketCacheService.invalidateTicket(ticketId);
+    await dashboardCacheService.invalidateDashboards();
 
     return {
       attachment: result,

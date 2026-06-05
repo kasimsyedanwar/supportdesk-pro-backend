@@ -432,3 +432,38 @@ GET /tickets/:ticketId
 GET /admin/tickets
 GET /agent/tickets
 ```
+
+## Phase 15: Dashboard Aggregations
+
+Implemented admin and agent dashboard aggregation APIs.
+
+### Added
+
+- `GET /admin/dashboard`
+- `GET /agent/dashboard`
+- Dashboard date filters using `from` and `to`
+- Admin ticket metrics
+- Admin user/agent metrics
+- Admin engagement metrics
+- Agent assigned ticket metrics
+- Agent engagement metrics
+- Recent tickets for dashboards
+- Redis caching for dashboard responses
+- Dashboard cache invalidation after ticket/comment/attachment writes
+
+### Admin Dashboard Metrics
+
+```txt
+total tickets
+tickets by status
+tickets by priority
+assigned tickets
+unassigned tickets
+users by role
+active agents
+unavailable agents
+comments count
+attachments count
+average resolution time
+recent tickets
+```

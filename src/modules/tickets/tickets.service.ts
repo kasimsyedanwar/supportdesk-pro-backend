@@ -8,6 +8,7 @@ import { AppError } from '../../common/errors/app-error';
 import { prisma } from '../../config/prisma';
 import { activityLogService } from '../activity-logs/activity-log.service';
 import { ActivityLogType } from '../activity-logs/activity-log.types';
+import { dashboardCacheService } from '../dashboard/dashboard-cache.service';
 import { ticketAccessService } from './ticket-access.service';
 import { ticketCacheService } from './ticket-cache.service';
 import {
@@ -66,6 +67,7 @@ export const ticketsService = {
     });
 
     await ticketCacheService.invalidateTicketLists();
+    await dashboardCacheService.invalidateDashboards();
 
     return {
       ticket,
@@ -206,6 +208,7 @@ export const ticketsService = {
     const ticket = await ticketsRepository.updateTicket(ticketId, input);
 
     await ticketCacheService.invalidateTicket(ticketId);
+    await dashboardCacheService.invalidateDashboards();
 
     return {
       ticket,
@@ -347,6 +350,7 @@ export const ticketsService = {
     });
 
     await ticketCacheService.invalidateTicket(ticketId);
+    await dashboardCacheService.invalidateDashboards();
 
     return {
       ticket: result.ticket,
@@ -416,6 +420,7 @@ export const ticketsService = {
     });
 
     await ticketCacheService.invalidateTicket(ticketId);
+    await dashboardCacheService.invalidateDashboards();
 
     return {
       ticket,

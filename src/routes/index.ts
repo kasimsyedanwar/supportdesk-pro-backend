@@ -12,6 +12,10 @@ import {
   agentUsersRouter,
   usersRouter,
 } from '../modules/users/users.routes';
+import {
+  adminDashboardRouter,
+  agentDashboardRouter,
+} from '../modules/dashboard/dashboard.routes';
 import { activityLogRouter } from '../modules/activity-logs/activity-log.routes';
 import { attachmentsRouter } from '../modules/attachments/attachments.routes';
 
@@ -30,3 +34,5 @@ apiRouter.use('/tickets', attachmentsRouter);
 apiRouter.use('/tickets', activityLogRouter);
 apiRouter.use('/admin/tickets', adminTicketsRouter);
 apiRouter.use('/agent/tickets', agentTicketsRouter);
+apiRouter.use('/admin/dashboard', adminDashboardRouter);
+apiRouter.use('/agent/dashboard', agentDashboardRouter);
